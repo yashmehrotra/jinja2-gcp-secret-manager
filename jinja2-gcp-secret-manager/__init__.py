@@ -7,14 +7,11 @@ import os
 
 from jinja2 import nodes
 from jinja2.ext import Extension
+import google.auth
 from google.cloud import secretmanager
 
-if not (credentials := os.getenv('GOOGLE_APPLICATION_CREDENTIALS')):
-    raise Exception(
-        'Need to set environment variable GOOGLE_APPLICATION_CREDENTIALS')
-
+credentials, PROJECT_ID = google.auth.default()
 CLIENT = secretmanager.SecretManagerServiceClient()
-PROJECT_ID = json.load(open(credentials))['project_id']
 
 
 class GoogleSecretManager(Extension):
@@ -27,16 +24,25 @@ class GoogleSecretManager(Extension):
 
         parser.stream.skip_if('comma')
         version = nodes.Const('latest')
+        project = PROJECT_ID
         if parser.stream.skip_if('name:version'):
             parser.stream.skip(1)
             version = parser.parse_expression()
 
-        args = (name, version)
+        if parser.stream.skip_if('name:project'):
+            parser.stream.skip(1)
+            project = parser.parse_expression()
 
-        return nodes.Output([
-            self.call_method('_access_secret', args)], lineno=lineno)
+        if not project:
+            parser.fail("project not specified", lineno=lineno)
 
-    def _access_secret(self, name, version):
+        args = (name, version, project)
+
+        return nodes.Output(
+            [self.call_method('_access_secret', args)], lineno=lineno
+        )
+
+    def _access_secret(self, name, version, project):
         return CLIENT.access_secret_version(request={
-            'name': f'projects/{PROJECT_ID}/secrets/{name}/versions/{version}'
+            'name': f'projects/{project}/secrets/{name}/versions/{version}'
         }).payload.data.decode('utf-8')
