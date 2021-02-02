@@ -24,8 +24,6 @@ class GoogleSecretManager(Extension):
 
         parser.stream.skip_if('comma')
         version = nodes.Const('latest')
-        if not PROJECT_ID:
-            parser.fail("Project not specified", lineno=lineno)
         project = nodes.Const(PROJECT_ID)
 
         if parser.stream.skip_if('name:version'):
@@ -36,6 +34,8 @@ class GoogleSecretManager(Extension):
             parser.stream.skip(1)
             project = parser.parse_expression()
 
+        if (not isinstance(project, nodes.Const)) or (not project.value):
+            parser.fail("Project not specified", lineno=lineno)
 
         args = (name, version, project)
 

@@ -1,7 +1,7 @@
 import setuptools
 
 version = None
-with open('jinja2-gcp-secret-manager/__init__.py', 'r') as f:
+with open('jinja2_gcp_secret_manager/__init__.py', 'r') as f:
     for line in f.readlines():
         if '__version__' in line:
             version = line.split('=')[1].replace('\'', '').strip()
