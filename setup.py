@@ -18,6 +18,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     license='Apache 2.0',
     install_requires=[
+        'google-auth',
         'google-cloud-secret-manager>=2.0.0',
         'Jinja2>=2.11.2',
     ],
