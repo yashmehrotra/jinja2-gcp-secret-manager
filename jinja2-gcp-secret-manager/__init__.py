@@ -1,4 +1,4 @@
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __author__ = 'Yash Mehrotra'
 __license__ = 'Apache 2.0'
 
@@ -24,7 +24,10 @@ class GoogleSecretManager(Extension):
 
         parser.stream.skip_if('comma')
         version = nodes.Const('latest')
-        project = PROJECT_ID
+        if not PROJECT_ID:
+            parser.fail("Project not specified", lineno=lineno)
+        project = nodes.Const(PROJECT_ID)
+
         if parser.stream.skip_if('name:version'):
             parser.stream.skip(1)
             version = parser.parse_expression()
@@ -33,8 +36,6 @@ class GoogleSecretManager(Extension):
             parser.stream.skip(1)
             project = parser.parse_expression()
 
-        if not project:
-            parser.fail("project not specified", lineno=lineno)
 
         args = (name, version, project)
 
