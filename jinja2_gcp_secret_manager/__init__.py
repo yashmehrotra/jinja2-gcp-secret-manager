@@ -10,12 +10,15 @@ from jinja2.ext import Extension
 import google.auth
 from google.cloud import secretmanager
 
-credentials, PROJECT_ID = google.auth.default()
-CLIENT = secretmanager.SecretManagerServiceClient()
-
 
 class GoogleSecretManager(Extension):
     tags = {'gcp_secret'}
+
+    def __init__(self, environment):
+        _, self.project_id = google.auth.default()
+        self.client = secretmanager.SecretManagerServiceClient()
+
+        super().__init__(environment)
 
     def parse(self, parser):
         lineno = next(parser.stream).lineno
@@ -24,7 +27,7 @@ class GoogleSecretManager(Extension):
 
         parser.stream.skip_if('comma')
         version = nodes.Const('latest')
-        project = nodes.Const(PROJECT_ID)
+        project = nodes.Const(self.project_id)
 
         if parser.stream.skip_if('name:version'):
             parser.stream.skip(1)
@@ -44,6 +47,6 @@ class GoogleSecretManager(Extension):
         )
 
     def _access_secret(self, name, version, project):
-        return CLIENT.access_secret_version(request={
+        return self.client.access_secret_version(request={
             'name': f'projects/{project}/secrets/{name}/versions/{version}'
         }).payload.data.decode('utf-8')
