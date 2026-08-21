@@ -19,15 +19,7 @@ setuptools.setup(
     license='Apache 2.0',
     install_requires=[
         'Jinja2 < 4',
-        'google-cloud-secret-manager < 3',
-        # These are dependencies of secret-manager package, had to put
-        # them here to make it work
-        'google-api-core[grpc] < 2',
-        'grpc-google-iam-v1 < 1',
-        'proto-plus < 2',
-        'libcst >= 0.2.5',
-        'protobuf < 4',
-        'googleapis-common-protos < 2',
+        'google-cloud-secret-manager',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
